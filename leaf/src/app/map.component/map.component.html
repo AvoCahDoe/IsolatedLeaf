@@ -1,0 +1,23 @@
+<div id="map-container" style="position: relative;">
+
+  <!-- Filter dropdown inside the map -->
+  <div style="position: absolute; bottom:20px; left: 10px; z-index: 1000; background: white; padding: 5px; border-radius: 5px;">
+    <label for="labelFilter">Filter by label:</label>
+
+<select id="labelFilter" [(ngModel)]="filterLabel" (change)="filterMarkers()">
+  <option value="All">All</option>
+  @for (label of uniqueLabels; track label) {
+    <option [value]="label">{{ label }}</option>
+  } @empty {
+    <option disabled>No labels available</option>
+  }
+
+
+</select>
+
+
+  </div>
+
+  <!-- Leaflet map -->
+  <div id="map" style="height: 500px; width: 100%;"></div>
+</div>

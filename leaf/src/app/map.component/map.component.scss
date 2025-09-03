@@ -1,0 +1,52 @@
+/* Map container */
+#map {
+  width: 100%;
+  height: 80vh;   // responsive height
+  min-height: 400px;   /* ensures map always visible */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* Filter dropdown inside the map */
+#map-container select {
+  min-width: 120px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Legend container */
+.info.legend {
+  font-size: 14px;
+  line-height: 24px;
+  background: rgba(255, 255, 255, 0.95);  /* semi-transparent white */
+  padding: 12px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  color: #333;
+  font-family: Arial, sans-serif;
+  min-width: 140px;
+}
+
+/* Legend items */
+.info.legend i {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background-size: contain;
+  border-radius: 50%;          /* circular icons */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Optional: add hover effect for legend items */
+.info.legend div:hover {
+  background-color: rgba(0,0,0,0.05);
+  border-radius: 6px;
+  cursor: default;
+  padding-left: 4px;
+}
