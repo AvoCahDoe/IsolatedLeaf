@@ -1,20 +1,19 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { MapComponent } from './map.component/map.component';
+import { CmnMapComponent } from './map.component/map.component';
 
-import { Marker } from './core/models/Marker.interface';
-
+import { MapMarkerI } from './core/model/Data/Marker.interface';
 @Component({
   selector: 'app-root',
   
-  imports: [RouterOutlet,MapComponent],
+  imports: [RouterOutlet,CmnMapComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   protected readonly title = signal('leaf');
 
-markersArray: Marker[] = [
+markersArray: MapMarkerI[] = [
   { id: '1', name: 'Mohammed Benali', lat: 33.5731, lng: -7.5898, country: 'Morocco', label: 'Client', addr_city: 'Casablanca', addr_street: '123 Avenue Mohammed V' },
   { id: '2', name: 'Klaus Mueller GmbH', country: 'Germany', label: 'Supplier', addr_city: 'Munich', addr_province: 'Bavaria', addr_street: 'Bayerstraße 45' },
   { id: '3', name: 'Fatima Zahra Trading', lat: 34.0209, lng: -6.8416, country: 'Morocco', label: 'Client', addr_city: 'Rabat', addr_street: 'Rue Ibn Batouta 12' },

@@ -1,215 +1,290 @@
-  import { Component, Input, OnInit } from '@angular/core';
-  import * as L from 'leaflet';
-  import { Marker as MarkerInterface } from '../core/models/Marker.interface';
-  import { HttpClient, HttpClientModule } from '@angular/common/http';
-  import { FormsModule } from '@angular/forms';
-  import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Component, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import * as L from 'leaflet';
+import { firstValueFrom } from 'rxjs';
+import { MapMarkerI } from '../core/model/Data/Marker.interface';
 
-  import 'leaflet.markercluster';
+@Component({
+  selector: 'cmn-map',
+  standalone: true,
+  imports: [FormsModule],
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.scss'],
+})
+export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() markersData: MapMarkerI[] = [];
 
-  @Component({
-    selector: 'app-map',
-    imports: [FormsModule, HttpClientModule],
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.scss']
-  })
-  export class MapComponent implements OnInit {
-    @Input() markersData: MarkerInterface[] = [];
+  map!: L.Map;
+  markers: L.Marker[] = [];
+  filterLabel = 'All';
+  uniqueLabels: string[] = [];
+  showFilter = false;
+  showLegend = false;
+  private legendControl: L.Control | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  
+  // Loading state
+  isLoading = true;
 
-    map!: L.Map;
-    leafletMarkers: L.Marker[] = [];
-    filterLabel: string = '';
-    uniqueLabels: string[] = [];
+  labelIcons: { [key: string]: L.Icon } = {
+    client: L.icon({ 
+      iconUrl: 'assets/icons/greenMarkerIcon.png', 
+      iconSize: [20, 20],
+      iconAnchor: [10, 20],
+      popupAnchor: [0, -20]
+    }),
+    supplier: L.icon({ 
+      iconUrl: 'assets/icons/redMarkerIcon.png', 
+      iconSize: [20, 20],
+      iconAnchor: [10, 20],
+      popupAnchor: [0, -20]
+    }),
+    default: L.icon({ 
+      iconUrl: 'assets/icons/blackMarkerIcon.png', 
+      iconSize: [20, 20],
+      iconAnchor: [10, 20],
+      popupAnchor: [0, -20]
+    }),
+  };
 
-    // dictionary of markers icons
-    labelIcons: { [key: string]: L.Icon } = {
-      Client: L.icon({
-        iconUrl: 'assets/icons/client.png',
-        iconSize: [20, 30],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -20]
-      }),
-      Supplier: L.icon({
-        iconUrl: 'assets/icons/supplier.png',
-        iconSize: [20, 30],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -20]
-      }),
-      Default: L.icon({
-        iconUrl: 'assets/icons/default.png',
-        iconSize: [20, 30],
-        iconAnchor: [8, 16],
-        popupAnchor: [0, -20]
-      })
-    };
+  constructor(private http: HttpClient) {}
 
-    constructor(private http: HttpClient) {}
+  ngOnInit(): void {
+    this.getUniqueLabels();
+  }
 
-    ngOnInit(): void {
+  ngAfterViewInit(): void {
+    // Use requestAnimationFrame for better performance
+    requestAnimationFrame(() => {
       this.initMap();
-      this.getUniqueLabels();
-      this.filterLabel = 'All';
-
       this.addMarkers(this.markersData);
       this.addLegend();
-
-      // Background geocoding
+      this.setupResizeObserver();
+      
       this.geocodeMissingMarkers().then(() => {
         this.filterMarkers();
+        this.isLoading = false;
       });
+    });
+  }
 
-      window.addEventListener('resize', () => {
-        if (this.map) this.map.invalidateSize();
-      });
+  ngOnDestroy(): void {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
+    if (this.map) {
+      this.map.remove();
+    }
+  }
 
-    initMap(): void {
-      this.map = L.map('map', { center: [0, 0], zoom: 2 });
+  private initMap(): void {
+    const mapElement = document.querySelector('.map-container');
+    if (mapElement) {
+      this.map = L.map(mapElement as HTMLElement, { 
+        center: [0, 0], 
+        zoom: 2,
+        zoomControl: false,         // purpusly disbaledd this 
+        attributionControl: true
+      });
+      
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
       }).addTo(this.map);
     }
+  }
 
-    getUniqueLabels(): void {
-      const labelsSet = new Set(this.markersData.map(m => m.label.trim()));
-      this.uniqueLabels = Array.from(labelsSet);
-    }
+  private getUniqueLabels(): void {
+    const labels = new Set(this.markersData.map(m => m.label?.trim().toLowerCase() || 'default'));
+    this.uniqueLabels = Array.from(labels).filter(label => label !== 'default');
+  }
 
-    getIcon(label: string): L.Icon {
-      return this.labelIcons[label] ?? this.labelIcons['Default'];
-    }
+  private getIconForLabel(label: string): L.Icon {
+    const normalizedLabel = label?.trim().toLowerCase() || 'default';
+    return this.labelIcons[normalizedLabel] || this.labelIcons['default'];
+  }
 
-  addMarkers(markers: MarkerInterface[], fit: boolean = true): void {
-    // Clear existing markers only if reloading everything
-    this.leafletMarkers.forEach(m => this.map.removeLayer(m));
-    this.leafletMarkers = [];
+  private addMarkers(markers: MapMarkerI[]): void {
+    // Clear existing markers
+    this.markers.forEach(m => {
+      if (this.map) {
+        this.map.removeLayer(m);
+      }
+    });
+    this.markers = [];
 
+    // Add new markers
     markers.forEach(marker => {
       if (marker.lat != null && marker.lng != null) {
-        const popupContent = `
-          <div style="font-size: 14px; line-height: 1.5;">
-            <b>Name:</b> ${marker.name}<br/>
-            <b>Label:</b> ${marker.label}<br/>
-            <b>Street:</b> ${marker.addr_street ?? '-'}<br/>
-            <b>City:</b> ${marker.addr_city ?? '-'}<br/>
-            <b>Province:</b> ${marker.addr_province ?? '-'}<br/>
-            <b>Country:</b> ${marker.country ?? '-'}
-          </div>
-        `;
-
-        const m = L.marker([marker.lat, marker.lng], { icon: this.getIcon(marker.label) })
-          .bindPopup(popupContent);
-
-        m.on('click', () => this.noamitim(marker));
-        this.leafletMarkers.push(m);
-        m.addTo(this.map);
+        const popup = `<b>${marker.name}</b><br/>${marker.label || 'No label'}`;
+        const m = L.marker([marker.lat, marker.lng], { 
+          icon: this.getIconForLabel(marker.label || ''),
+          alt: `${marker.name} - ${marker.label || 'No label'}`
+        }).bindPopup(popup);
+        
+        this.markers.push(m);
+        if (this.map) {
+          m.addTo(this.map);
+        }
       }
     });
 
-
-    //responsiveness
-    if (fit && this.leafletMarkers.length > 0) {
-      const group = L.featureGroup(this.leafletMarkers);
-      this.map.fitBounds(group.getBounds().pad(0.2));
+    // Fit bounds to markers
+    if (this.markers.length > 0 && this.map) {
+      const group = L.featureGroup(this.markers);
+      this.map.fitBounds(group.getBounds().pad(0.1));
     }
 
-
+    this.updateLegend();
   }
 
+  filterMarkers(): void {
+    const filter = this.filterLabel.trim().toLowerCase();
+    const filtered = filter === 'all' ? this.markersData : 
+      this.markersData.filter(m => m.label?.trim().toLowerCase() === filter);
+    this.addMarkers(filtered);
+  }
 
-    filterMarkers(): void {
-      const selectedLabel = this.filterLabel?.trim().toLowerCase();
-      if (!selectedLabel || selectedLabel === 'all') {
-        this.addMarkers(this.markersData);
-        return;
+  toggleFilter(): void {
+    this.showFilter = !this.showFilter;
+  }
+
+  toggleLegend(): void {
+    this.showLegend = !this.showLegend;
+    this.updateLegend();
+  }
+
+  private updateLegend(): void {
+    if (this.legendControl && this.map) {
+      const legendElement = this.legendControl.getContainer();
+      if (legendElement) {
+        legendElement.style.display = this.showLegend && this.markers.length > 0 ? 'block' : 'none';
       }
-      const filtered = this.markersData.filter(
-        m => m.label.trim().toLowerCase() === selectedLabel
-      );
-      this.addMarkers(filtered);
     }
+  }
 
-    noamitim(marker?: MarkerInterface): void {
-      console.log('Marker clicked:', marker);
-    }
-
-    addLegend(): void {
-      const legend = (L.control as any)({ position: 'bottomright' });
-
-      legend.onAdd = () => {
-        const div = L.DomUtil.create('div', 'info legend');
-
-        div.style.background = 'rgba(255, 255, 255, 0.95)';
-        div.style.padding = '12px 15px';
-        div.style.borderRadius = '10px';
-        div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
-        div.style.fontFamily = 'Arial, sans-serif';
-        div.style.fontSize = '14px';
-        div.style.color = '#333';
-        div.style.lineHeight = '1.6';
-        div.style.minWidth = '130px';
-
-        div.innerHTML = `<h4 style="margin:0 0 10px 0; font-size:16px; text-align:center; color:#555;">Legend</h4>`;
-
-        Object.entries(this.labelIcons).forEach(([label, icon]) => {
-          if (label === 'Default') return;
-          const iconUrl = icon.options.iconUrl;
-          div.innerHTML += `
-            <div style="display:flex; align-items:center; margin-bottom:6px;">
-              <span style="
-                display:inline-block;
-                width:24px; height:24px;
-                background: url('${iconUrl}') no-repeat center center;
-                background-size: contain;
-                border-radius:50%;
-                margin-right:8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-              "></span>
-              <span>${label}</span>
-            </div>
-          `;
-        });
-
+  private addLegend(): void {
+    // Create a custom control class for the legend
+    const LegendControl = L.Control.extend({
+      onAdd: (map: L.Map) => {
+        const div = L.DomUtil.create('div', 'info legend') as HTMLDivElement;
+        div.setAttribute('id', 'map-legend');
+        div.setAttribute('role', 'region');
+        div.setAttribute('aria-label', 'Map legend');
+        
+        div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
+        
+        // This will be populated later
+        div.innerHTML += '<div class="legend-content"></div>';
+        
+        // Make legend transparent as requested
+        div.style.background = 'rgba(255, 255, 255, 0.7)';
+        div.style.padding = '10px';
+        div.style.borderRadius = '5px';
+        div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
+        div.style.backdropFilter = 'blur(5px)';
+        div.style.display = 'none';
+        
         return div;
-      };
-
-      legend.addTo(this.map);
-    }
-
-    // Delay helper
-    private delay(ms: number) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-  // Geocoding with User, delay and retry
-async geocodeMissingMarkers(): Promise<void> {
-  for (const marker of this.markersData) {
-    if ((marker.lat == null || marker.lng == null) && marker.addr_city) {
-      try {
-        const query = encodeURIComponent(
-          `${marker.addr_street ?? ''} ${marker.addr_city} ${marker.addr_province ?? ''} ${marker.country}`
-        );
-        const url = `https://photon.komoot.io/api/?q=${query}&limit=1`;
-
-        const results: any = await firstValueFrom(this.http.get(url));
-
-        if (results && results.features && results.features.length > 0) {
-          const coords = results.features[0].geometry.coordinates; // [lng, lat]
-          marker.lng = coords[0];
-          marker.lat = coords[1];
-
-          console.log(`Geocoded ${marker.id}:`, marker.lat, marker.lng);
-
-          // Prevent re-centering the map
-          this.addMarkers(this.markersData, false); // ✅ Pass false to avoid fitBounds
-        }
-      } catch (err) {
-        console.warn('Photon geocoding failed for marker', marker, err);
+      },
+      
+      onRemove: (map: L.Map) => {
+        // Cleanup if needed
       }
+    });
+    
+    // Create instance of the control
+    this.legendControl = new LegendControl({ position: 'bottomright' });
+    
+    if (this.map) {
+      this.legendControl.addTo(this.map);
+      this.populateLegend();
+    }
+  }
 
-      await this.delay(500);
+  private populateLegend(): void {
+    if (!this.legendControl || !this.map) return;
+    
+    const legendElement = this.legendControl.getContainer();
+    if (!legendElement) return;
+    
+    const contentElement = legendElement.querySelector('.legend-content');
+    if (!contentElement) return;
+    
+    // Clear existing content
+    contentElement.innerHTML = '';
+    
+    // Show legend items for actual used labels
+    const usedLabels = new Set(this.markersData.map(m => m.label?.trim().toLowerCase() || 'default'));
+    
+    usedLabels.forEach(label => {
+      if (label !== 'default' && this.labelIcons[label]) {
+        const icon = this.labelIcons[label];
+        const url = (icon as any).options.iconUrl;
+        // Capitalize first letter for display
+        const displayName = label.charAt(0).toUpperCase() + label.slice(1);
+        
+        const item = document.createElement('div');
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        item.style.marginBottom = '4px';
+        
+        item.innerHTML = `
+          <img src="${url}" 
+               alt="${displayName} marker" 
+               style="width:16px;height:16px;margin-right:8px;">
+          <span>${displayName}</span>
+        `;
+        
+        contentElement.appendChild(item);
+      }
+    });
+  }
+
+  private async geocodeMissingMarkers(): Promise<void> {
+    const markersToGeocode = this.markersData.filter(m => 
+      (!m.lat || !m.lng) && m.addr_city
+    );
+    
+    const total = markersToGeocode.length;
+    let processed = 0;
+
+    for (const marker of markersToGeocode) {
+      try {
+        processed++;
+        
+        const q = encodeURIComponent(`${marker.addr_street ?? ''} ${marker.addr_city} ${marker.addr_province ?? ''} ${marker.country}`);
+        const res: any = await firstValueFrom(
+          this.http.get(`https://photon.komoot.io/api/?q=${q}&limit=1`)
+        );
+        
+        if (res?.features?.length > 0) {
+          const [lng, lat] = res.features[0].geometry.coordinates;
+          marker.lat = lat;
+          marker.lng = lng;
+        }
+      } catch (e) {
+        console.warn('Geocoding failed for marker:', marker, e);
+      }
+      
+      // Rate limiting for API
+      await new Promise(r => setTimeout(r, 200));
+    }
+    
+    this.getUniqueLabels();
+    this.populateLegend(); // Update legend after geocoding
+  }
+
+  private setupResizeObserver(): void {
+    const mapElement = document.querySelector('.map-container');
+    if (mapElement) {
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.map) {
+          this.map.invalidateSize();
+        }
+      });
+      this.resizeObserver.observe(mapElement);
     }
   }
 }
-
-  }

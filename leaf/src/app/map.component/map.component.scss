@@ -1,166 +1,188 @@
-/* Map container - centered and compact */
-#map-container {
-  max-width: 900px;           /* Maximum width for the component */
-  width: 100%;                /* Full width up to max-width */
-  margin: 20px auto;          /* Center the component with top/bottom margin */
-  padding: 15px;              /* Inner padding */
-  background: #fff;           /* White background */
-  border-radius: 12px;        /* Rounded corners */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);  /* Subtle shadow */
+.map-wrapper {
   position: relative;
-}
-
-/* Map itself */
-#map {
   width: 100%;
-  height: 500px;              /* Fixed height instead of viewport height */
-  min-height: 400px;          /* Minimum height */
-  border: 2px solid #e0e0e0;  /* Light border */
-  border-radius: 8px;         /* Rounded corners for map */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05); /* Inner shadow */
+  height: 500px;
 }
 
-/* Filter dropdown styling - positioned inside map */
-#map-container .filter-controls {
+.map-container {
+  width: 100%;
+  height: 100%;
+  transition: filter 0.3s ease;
+
+  &.blurred {
+    filter: blur(4px);
+  }
+}
+
+/* Spinner Overlay */
+.loading-overlay {
   position: absolute;
-  top: 100px;                  /* Position from top instead of bottom */
-  left: 20px;                 /* Position from left */
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 10px 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px); /* Glass effect */
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Filter label styling */
-#map-container .filter-controls label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 5px;
-  display: block;
-}
-
-/* Filter dropdown styling */
-#map-container select {
-  min-width: 140px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
-}
-
-#map-container select:hover {
-  border-color: #007bff;
-}
-
-#map-container select:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-/* Legend container - enhanced styling */
-.info.legend {
-  font-size: 13px;
-  line-height: 1.5;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 12px 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  color: #333;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  min-width: 140px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Legend title */
-.info.legend h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  color: #444;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  padding-bottom: 8px;
-}
-
-/* Legend items */
-.info.legend i {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-  background-size: contain;
-  border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Legend item containers */
-.info.legend div {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
-  margin-bottom: 6px;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
+  justify-content: center;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 
-/* Hover effect for legend items */
-.info.legend div:hover {
-  background-color: rgba(0, 123, 255, 0.08);
-  cursor: default;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  #map-container {
-    margin: 10px;
-    padding: 10px;
-    max-width: none;          /* Remove max-width on mobile */
-  }
-  
-  #map {
-    height: 400px;            /* Shorter on mobile */
-    min-height: 300px;
-  }
-  
-  #map-container .filter-controls {
-    top: 40px;
-    left: 60px;
-    padding: 8px 12px;
-  }
-  
-  #map-container select {
-    min-width: 120px;
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-  
-  .info.legend {
-    font-size: 12px;
-    padding: 10px 12px;
-    min-width: 120px;
+  &.show {
+    opacity: 1;
+    visibility: visible;
   }
 }
 
-@media (max-width: 480px) {
-  #map {
-    height: 350px;
-    min-height: 280px;
+.spinner-container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  min-width: 250px;
+}
+
+/* CSS Spinner */
+.css-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #333;
+  margin: 0 0 5px 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.sub-text {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Map Buttons */
+.map-btn {
+  position: absolute;
+  z-index: 1001;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 18px;
+  transition: all 0.2s;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: white;
+    transform: scale(1.05);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
   }
-  
-  #map-container .filter-controls {
-    position: static;         /* Make filter controls static on very small screens */
-    margin-bottom: 10px;
-    background: #f8f9fa;
-    text-align: center;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
+
+  &:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+  }
+}
+
+.filter-btn {
+  top: 15px;
+  left: 15px; /* Moved to top-left corner */
+}
+
+.legend-btn {
+  top: 15px;
+  right: 15px;
+}
+
+/* Slide-in Filter Panel */
+.filter-slide {
+  position: absolute;
+  top: 15px;
+  left: 65px; /* Positioned next to filter button */
+  z-index: 1001;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+}
+
+.filter-content {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+  border: 1px solid #eee;
+  backdrop-filter: blur(10px);
+  padding: 2px;
+}
+
+.filter-select {
+  width: 180px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus {
+    background: white;
+    box-shadow: 0 0 0 2px #3498db;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

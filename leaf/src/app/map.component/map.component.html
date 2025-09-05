@@ -1,17 +1,70 @@
-<div id="map-container">
-  <!-- Filter dropdown with better positioning and styling -->
-  <div class="filter-controls">
-    <label for="labelFilter">Filter by label:</label>
-    <select id="labelFilter" [(ngModel)]="filterLabel" (change)="filterMarkers()">
-      <option value="All">All</option>
-      @for (label of uniqueLabels; track label) {
-        <option [value]="label">{{ label }}</option>
-      } @empty {
-        <option disabled>No labels available</option>
-      }
-    </select>
+<div class="map-wrapper" role="region" aria-label="Interactive map">
+  <!-- Map Container -->
+  <div 
+    class="map-container" 
+    [class.blurred]="isLoading"
+    role="application"
+    aria-label="Map display area">
   </div>
 
-  <!-- Leaflet map -->
-  <div id="map"></div>
+  <!-- Loading Overlay -->
+  <div 
+    class="loading-overlay" 
+    [class.show]="isLoading"
+    role="status"
+    aria-live="polite">
+    <div class="spinner-container" aria-hidden="true">
+      <div class="css-spinner" aria-hidden="true"></div>
+      <div class="loading-text">Loading map...</div>
+      <p class="sub-text">Please wait</p>
+    </div>
+  </div>
+
+  <!-- Filter Button -->
+  <button 
+    class="map-btn filter-btn"
+    (click)="toggleFilter()" 
+    title="Filter markers"
+    [attr.aria-expanded]="showFilter"
+    [disabled]="isLoading"
+    aria-controls="filter-panel">
+    🎯
+    <span class="sr-only">Filter markers</span>
+  </button>
+  
+  <!-- Filter Dropdown - Slide-in panel -->
+  <div 
+    id="filter-panel"
+    class="filter-slide" 
+    [class.visible]="showFilter && !isLoading"
+    role="region"
+    aria-label="Marker filter panel">
+    <div class="filter-content">
+      <label for="filter-select" class="sr-only">Select marker category</label>
+      <select 
+        id="filter-select"
+        [(ngModel)]="filterLabel" 
+        (change)="filterMarkers()" 
+        [disabled]="isLoading" 
+        class="filter-select"
+        aria-label="Filter markers by category">
+        <option value="All">All Markers</option>
+        @for (label of uniqueLabels; track label) {
+          <option [value]="label">{{ label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <!-- Legend Button -->
+  <button 
+    class="map-btn legend-btn"
+    (click)="toggleLegend()" 
+    title="Toggle legend"
+    [attr.aria-expanded]="showLegend"
+    [disabled]="isLoading"
+    aria-controls="map-legend">
+    ℹ️
+    <span class="sr-only">Toggle legend</span>
+  </button>
 </div>
