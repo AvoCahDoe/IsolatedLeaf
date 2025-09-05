@@ -113,7 +113,7 @@
 
 .filter-btn {
   top: 15px;
-  left: 15px; /* Moved to top-left corner */
+  left: 15px;
 }
 
 .legend-btn {
@@ -125,7 +125,7 @@
 .filter-slide {
   position: absolute;
   top: 15px;
-  left: 65px; /* Positioned next to filter button */
+  left: 65px;
   z-index: 1001;
   opacity: 0;
   visibility: hidden;

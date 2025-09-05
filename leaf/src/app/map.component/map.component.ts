@@ -55,7 +55,6 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Use requestAnimationFrame for better performance
     requestAnimationFrame(() => {
       this.initMap();
       this.addMarkers(this.markersData);
@@ -84,7 +83,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map = L.map(mapElement as HTMLElement, { 
         center: [0, 0], 
         zoom: 2,
-        zoomControl: false,         // purpusly disbaledd this 
+        zoomControl: false,
         attributionControl: true
       });
       
@@ -114,41 +113,41 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.markers = [];
 
-markers.forEach(marker => {
-  if (marker.lat != null && marker.lng != null && 
-      !isNaN(marker.lat) && !isNaN(marker.lng)) {
-    
-    let popupContent = `<b>${marker.name || 'Unnamed'}</b><br/>`;
-    
-    if (marker.label) {
-      popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
-    }
-    
-    if (marker.addr_street) {
-      popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
-    }
-    
-    if (marker.addr_city) {
-      popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
-    }
-    
-    if (popupContent.endsWith('<br/>')) {
-      popupContent = popupContent.slice(0, -5);
-    }
-    
-    const m = L.marker([marker.lat, marker.lng], { 
-      icon: this.getIconForLabel(marker.label || ''),
-      alt: `${marker.name || 'Unnamed'} - ${marker.label || 'No label'}`
-    }).bindPopup(popupContent);
-    
-    this.markers.push(m);
-    if (this.map) {
-      m.addTo(this.map);
-    }
-  } else {
-    console.warn('Marker missing valid coordinates:', marker);
-  }
-});
+    markers.forEach(marker => {
+      if (marker.lat != null && marker.lng != null && 
+          !isNaN(marker.lat) && !isNaN(marker.lng)) {
+        
+        let popupContent = `<b>${marker.name || 'Unnamed'}</b><br/>`;
+        
+        if (marker.label) {
+          popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
+        }
+        
+        if (marker.addr_street) {
+          popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
+        }
+        
+        if (marker.addr_city) {
+          popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
+        }
+        
+        if (popupContent.endsWith('<br/>')) {
+          popupContent = popupContent.slice(0, -5);
+        }
+        
+        const m = L.marker([marker.lat, marker.lng], { 
+          icon: this.getIconForLabel(marker.label || ''),
+          alt: `${marker.name || 'Unnamed'} - ${marker.label || 'No label'}`
+        }).bindPopup(popupContent);
+        
+        this.markers.push(m);
+        if (this.map) {
+          m.addTo(this.map);
+        }
+      } else {
+        console.warn('Marker missing valid coordinates:', marker);
+      }
+    });
 
     // Fit bounds to markers
     if (this.markers.length > 0 && this.map) {
@@ -182,24 +181,21 @@ markers.forEach(marker => {
         legendElement.style.display = this.showLegend && this.markers.length > 0 ? 'block' : 'none';
       }
     }
+    this.populateLegend();
   }
 
   private addLegend(): void {
-    // Create a custom control class for the legend
     const LegendControl = L.Control.extend({
-      onAdd: (map: L.Map) => {
+      onAdd: () => {
         const div = L.DomUtil.create('div', 'info legend') as HTMLDivElement;
         div.setAttribute('id', 'map-legend');
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', 'Map legend');
         
         div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
-        
-        // This will be populated later
         div.innerHTML += '<div class="legend-content"></div>';
         
-        // Make legend transparent as requested
-        div.style.background = 'rgba(255, 255, 255, 0)';        //opacity
+        div.style.background = 'rgba(255, 255, 255, 0.2)';
         div.style.padding = '10px';
         div.style.borderRadius = '5px';
         div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
@@ -209,12 +205,8 @@ markers.forEach(marker => {
         return div;
       },
       
-      onRemove: (map: L.Map) => {
-        // Cleanup if needed
-      }
     });
     
-    // Create instance of the control
     this.legendControl = new LegendControl({ position: 'bottomright' });
     
     if (this.map) {
@@ -235,30 +227,59 @@ markers.forEach(marker => {
     // Clear existing content
     contentElement.innerHTML = '';
     
-    // Show legend items for actual used labels
-    const usedLabels = new Set(this.markersData.map(m => m.label?.trim().toLowerCase() || 'default'));
-    
-    usedLabels.forEach(label => {
-      if (label !== 'default' && this.labelIcons[label]) {
-        const icon = this.labelIcons[label];
-        const url = (icon as any).options.iconUrl;
-        // Capitalize first letter for display
-        const displayName = label.charAt(0).toUpperCase() + label.slice(1);
-        
-        const item = document.createElement('div');
-        item.style.display = 'flex';
-        item.style.alignItems = 'center';
-        item.style.marginBottom = '4px';
-        
-        item.innerHTML = `
-          <img src="${url}" 
-               alt="${displayName} marker" 
-               style="width:16px;height:16px;margin-right:8px;">
-          <span>${displayName}</span>
-        `;
-        
-        contentElement.appendChild(item);
+    // Get all unique labels from current markers (excluding default)
+    const currentLabels = new Set<string>();
+    this.markers.forEach(marker => {
+      const markerOptions = (marker as any).options;
+      if (markerOptions && markerOptions.icon) {
+        const iconUrl = markerOptions.icon.options.iconUrl;
+        // Find matching label for this icon (excluding default)
+        for (const [label, icon] of Object.entries(this.labelIcons)) {
+          if (label !== 'default' && (icon as any).options.iconUrl === iconUrl) {
+            currentLabels.add(label);
+            break;
+          }
+        }
       }
+    });
+    
+    // Also check all labels in the original data to ensure completeness (excluding default)
+    this.markersData.forEach(marker => {
+      const label = marker.label?.trim().toLowerCase();
+      if (label && label !== 'default') {
+        currentLabels.add(label);
+      }
+    });
+    
+    const sortedLabels = Array.from(currentLabels).sort();
+    
+    // Create legend items
+    sortedLabels.forEach(label => {
+      let iconUrl: string;
+      let displayName: string;
+      
+      if (this.labelIcons[label]) {
+        iconUrl = this.labelIcons[label].options.iconUrl;
+        displayName = label.charAt(0).toUpperCase() + label.slice(1);
+      } else {
+        // For unknown labels, use default icon
+        iconUrl = this.labelIcons['default'].options.iconUrl;
+        displayName = label.charAt(0).toUpperCase() + label.slice(1);
+      }
+      
+      const item = document.createElement('div');
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.marginBottom = '4px';
+      
+      item.innerHTML = `
+        <img src="${iconUrl}" 
+             alt="${displayName} marker" 
+             style="width:16px;height:16px;margin-right:8px;">
+        <span>${displayName}</span>
+      `;
+      
+      contentElement.appendChild(item);
     });
   }
 
@@ -267,13 +288,8 @@ markers.forEach(marker => {
       (!m.lat || !m.lng) && m.addr_city
     );
     
-    const total = markersToGeocode.length;
-    let processed = 0;
-
     for (const marker of markersToGeocode) {
       try {
-        processed++;
-        
         const q = encodeURIComponent(`${marker.addr_street ?? ''} ${marker.addr_city} ${marker.addr_province ?? ''} ${marker.country}`);
         const res: any = await firstValueFrom(
           this.http.get(`https://photon.komoot.io/api/?q=${q}&limit=1`)
@@ -288,12 +304,11 @@ markers.forEach(marker => {
         console.warn('Geocoding failed for marker:', marker, e);
       }
       
-      // Rate limiting for API
       await new Promise(r => setTimeout(r, 200));
     }
     
     this.getUniqueLabels();
-    this.populateLegend(); // Update legend after geocoding
+    this.populateLegend();
   }
 
   private setupResizeObserver(): void {

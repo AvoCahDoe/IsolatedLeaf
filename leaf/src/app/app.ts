@@ -33,8 +33,8 @@ markersArray: MapMarkerI[] = [
   { id: '17', name: 'Samira Alaoui', lat: 32.2998, lng: -9.2371, country: 'Morocco', label: 'Client', addr_city: 'Essaouira', addr_street: 'Rue de la Corniche 45' },
   { id: '18', name: 'Hannoverian Machinery', country: 'Germany', label: 'Supplier', addr_city: 'Hanover', addr_province: 'Lower Saxony', addr_street: 'Maschinenweg 34' },
   { id: '19', name: 'Mustapha Jilali', lat: 35.2629, lng: -6.5688, country: 'Morocco', label: 'Client', addr_city: 'Tetouan', addr_street: 'Avenue Mohammed VI 12' },
-  { id: '20', name: 'Black Forest Timber', country: 'Germany', label: 'Supplier', addr_city: 'Freiburg', addr_province: 'Baden-Württemberg', addr_street: 'Waldweg 89' },
-  { id: '21', name: 'Omar El Idrissi', country: 'Morocco', label: 'Client', addr_city: 'Ouarzazate', addr_street: 'Avenue des Kasbahs 11' },
+  { id: '20', name: 'Black Forest Timber', country: 'Germany', label: 'AnotherLabel2', addr_city: 'Freiburg', addr_province: 'Baden-Württemberg', addr_street: 'Waldweg 89' },
+  { id: '21', name: 'Omar El Idrissi', country: 'Morocco', label: 'AnotherLabel1', addr_city: 'Ouarzazate', addr_street: 'Avenue des Kasbahs 11' },
 
 
   // a bunch of data with no coordinates u can test them 
