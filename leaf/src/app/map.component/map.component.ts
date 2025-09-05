@@ -179,7 +179,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         div.innerHTML += '<div class="legend-content"></div>';
         
         // Make legend transparent as requested
-        div.style.background = 'rgba(255, 255, 255, 0.7)';
+        div.style.background = 'rgba(255, 255, 255, 0)';        //opacity
         div.style.padding = '10px';
         div.style.borderRadius = '5px';
         div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
