@@ -114,21 +114,41 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
     this.markers = [];
 
-    // Add new markers
-    markers.forEach(marker => {
-      if (marker.lat != null && marker.lng != null) {
-        const popup = `<b>${marker.name}</b><br/>${marker.label || 'No label'}`;
-        const m = L.marker([marker.lat, marker.lng], { 
-          icon: this.getIconForLabel(marker.label || ''),
-          alt: `${marker.name} - ${marker.label || 'No label'}`
-        }).bindPopup(popup);
-        
-        this.markers.push(m);
-        if (this.map) {
-          m.addTo(this.map);
-        }
-      }
-    });
+markers.forEach(marker => {
+  if (marker.lat != null && marker.lng != null && 
+      !isNaN(marker.lat) && !isNaN(marker.lng)) {
+    
+    let popupContent = `<b>${marker.name || 'Unnamed'}</b><br/>`;
+    
+    if (marker.label) {
+      popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
+    }
+    
+    if (marker.addr_street) {
+      popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
+    }
+    
+    if (marker.addr_city) {
+      popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
+    }
+    
+    if (popupContent.endsWith('<br/>')) {
+      popupContent = popupContent.slice(0, -5);
+    }
+    
+    const m = L.marker([marker.lat, marker.lng], { 
+      icon: this.getIconForLabel(marker.label || ''),
+      alt: `${marker.name || 'Unnamed'} - ${marker.label || 'No label'}`
+    }).bindPopup(popupContent);
+    
+    this.markers.push(m);
+    if (this.map) {
+      m.addTo(this.map);
+    }
+  } else {
+    console.warn('Marker missing valid coordinates:', marker);
+  }
+});
 
     // Fit bounds to markers
     if (this.markers.length > 0 && this.map) {
