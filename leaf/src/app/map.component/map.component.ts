@@ -13,21 +13,21 @@ import { MapMarkerI } from '../core/model/Data/Marker.interface';
   styleUrls: ['./map.component.scss'],
 })
 export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() markersData: MapMarkerI[] = [];
+  @Input() public markersData: MapMarkerI[] = [];
 
-  map!: L.Map;
-  markers: L.Marker[] = [];
-  filterLabel = 'All';
-  uniqueLabels: string[] = [];
-  showFilter = false;
-  showLegend = false;
+  public map!: L.Map;
+  private markers: L.Marker[] = [];
+  public filterLabel: string = 'All';
+  public uniqueLabels: string[] = [];
+  public showFilter: boolean = false;
+  public showLegend: boolean = false;
   private legendControl: L.Control | null = null;
   private resizeObserver: ResizeObserver | null = null;
   
   // Loading state
-  isLoading = true;
+  public isLoading: boolean = true;
 
-  labelIcons: { [key: string]: L.Icon } = {
+  private labelIcons: { [key: string]: L.Icon } = {
     client: L.icon({ 
       iconUrl: 'assets/icons/greenMarkerIcon.png', 
       iconSize: [20, 20],
@@ -50,11 +50,11 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(private http: HttpClient) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.getUniqueLabels();
   }
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     requestAnimationFrame(() => {
       this.initMap();
       this.addMarkers(this.markersData);
@@ -68,7 +68,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
@@ -105,11 +105,8 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private addMarkers(markers: MapMarkerI[]): void {
-    // Clear existing markers
     this.markers.forEach(m => {
-      if (this.map) {
-        this.map.removeLayer(m);
-      }
+      if (this.map) this.map.removeLayer(m);
     });
     this.markers = [];
 
@@ -119,21 +116,10 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         
         let popupContent = `<b>${marker.name || 'Unnamed'}</b><br/>`;
         
-        if (marker.label) {
-          popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
-        }
-        
-        if (marker.addr_street) {
-          popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
-        }
-        
-        if (marker.addr_city) {
-          popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
-        }
-        
-        if (popupContent.endsWith('<br/>')) {
-          popupContent = popupContent.slice(0, -5);
-        }
+        if (marker.label) popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
+        if (marker.addr_street) popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
+        if (marker.addr_city) popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
+        if (popupContent.endsWith('<br/>')) popupContent = popupContent.slice(0, -5);
         
         const m = L.marker([marker.lat, marker.lng], { 
           icon: this.getIconForLabel(marker.label || ''),
@@ -141,15 +127,12 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         }).bindPopup(popupContent);
         
         this.markers.push(m);
-        if (this.map) {
-          m.addTo(this.map);
-        }
+        if (this.map) m.addTo(this.map);
       } else {
         console.warn('Marker missing valid coordinates:', marker);
       }
     });
 
-    // Fit bounds to markers
     if (this.markers.length > 0 && this.map) {
       const group = L.featureGroup(this.markers);
       this.map.fitBounds(group.getBounds().pad(0.1));
@@ -158,18 +141,18 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateLegend();
   }
 
-  filterMarkers(): void {
+  public filterMarkers(): void {
     const filter = this.filterLabel.trim().toLowerCase();
     const filtered = filter === 'all' ? this.markersData : 
       this.markersData.filter(m => m.label?.trim().toLowerCase() === filter);
     this.addMarkers(filtered);
   }
 
-  toggleFilter(): void {
+  public toggleFilter(): void {
     this.showFilter = !this.showFilter;
   }
 
-  toggleLegend(): void {
+  public toggleLegend(): void {
     this.showLegend = !this.showLegend;
     this.updateLegend();
   }
@@ -177,9 +160,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateLegend(): void {
     if (this.legendControl && this.map) {
       const legendElement = this.legendControl.getContainer();
-      if (legendElement) {
-        legendElement.style.display = this.showLegend && this.markers.length > 0 ? 'block' : 'none';
-      }
+      if (legendElement) legendElement.style.display = this.showLegend && this.markers.length > 0 ? 'block' : 'none';
     }
     this.populateLegend();
   }
@@ -204,11 +185,9 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         
         return div;
       },
-      
     });
     
     this.legendControl = new LegendControl({ position: 'bottomright' });
-    
     if (this.map) {
       this.legendControl.addTo(this.map);
       this.populateLegend();
@@ -224,16 +203,13 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     const contentElement = legendElement.querySelector('.legend-content');
     if (!contentElement) return;
     
-    // Clear existing content
     contentElement.innerHTML = '';
-    
-    // Get all unique labels from current markers (excluding default)
     const currentLabels = new Set<string>();
+    
     this.markers.forEach(marker => {
       const markerOptions = (marker as any).options;
       if (markerOptions && markerOptions.icon) {
         const iconUrl = markerOptions.icon.options.iconUrl;
-        // Find matching label for this icon (excluding default)
         for (const [label, icon] of Object.entries(this.labelIcons)) {
           if (label !== 'default' && (icon as any).options.iconUrl === iconUrl) {
             currentLabels.add(label);
@@ -243,17 +219,13 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
     
-    // Also check all labels in the original data to ensure completeness (excluding default)
     this.markersData.forEach(marker => {
       const label = marker.label?.trim().toLowerCase();
-      if (label && label !== 'default') {
-        currentLabels.add(label);
-      }
+      if (label && label !== 'default') currentLabels.add(label);
     });
     
     const sortedLabels = Array.from(currentLabels).sort();
     
-    // Create legend items
     sortedLabels.forEach(label => {
       let iconUrl: string;
       let displayName: string;
@@ -262,7 +234,6 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         iconUrl = this.labelIcons[label].options.iconUrl;
         displayName = label.charAt(0).toUpperCase() + label.slice(1);
       } else {
-        // For unknown labels, use default icon
         iconUrl = this.labelIcons['default'].options.iconUrl;
         displayName = label.charAt(0).toUpperCase() + label.slice(1);
       }
@@ -315,9 +286,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     const mapElement = document.querySelector('.map-container');
     if (mapElement) {
       this.resizeObserver = new ResizeObserver(() => {
-        if (this.map) {
-          this.map.invalidateSize();
-        }
+        if (this.map) this.map.invalidateSize();
       });
       this.resizeObserver.observe(mapElement);
     }
