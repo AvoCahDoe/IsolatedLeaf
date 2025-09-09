@@ -1,6 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatCardModule } from '@angular/material/card';
 import * as L from 'leaflet';
 import { firstValueFrom } from 'rxjs';
 import { MapMarkerI } from '../core/model/Data/Marker.interface';
@@ -8,9 +14,18 @@ import { MapMarkerI } from '../core/model/Data/Marker.interface';
 @Component({
   selector: 'cmn-map',
   standalone: true,
-  imports: [FormsModule],
+  imports: [
+    FormsModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatCardModule
+  ],
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() public markersData: MapMarkerI[] = [];
@@ -19,8 +34,6 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private markers: L.Marker[] = [];
   public filterLabel: string = 'All';
   public uniqueLabels: string[] = [];
-  public showFilter: boolean = false;
-  public showLegend: boolean = false;
   private legendControl: L.Control | null = null;
   private resizeObserver: ResizeObserver | null = null;
   
@@ -83,7 +96,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
       this.map = L.map(mapElement as HTMLElement, { 
         center: [0, 0], 
         zoom: 2,
-        zoomControl: false,
+        zoomControl: true,
         attributionControl: true
       });
       
@@ -116,7 +129,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         
         let popupContent = `<b>${marker.name || 'Unnamed'}</b><br/>`;
         
-        if (marker.label) popupContent += `<strong>Label:</strong> ${marker.label}<br/>`;
+        if (marker.label) popupContent += `<strong>Type:</strong> ${marker.label}<br/>`;
         if (marker.addr_street) popupContent += `<strong>Address:</strong> ${marker.addr_street}<br/>`;
         if (marker.addr_city) popupContent += `<strong>City:</strong> ${marker.addr_city}<br/>`;
         if (popupContent.endsWith('<br/>')) popupContent = popupContent.slice(0, -5);
@@ -148,19 +161,10 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.addMarkers(filtered);
   }
 
-  public toggleFilter(): void {
-    this.showFilter = !this.showFilter;
-  }
-
-  public toggleLegend(): void {
-    this.showLegend = !this.showLegend;
-    this.updateLegend();
-  }
-
   private updateLegend(): void {
     if (this.legendControl && this.map) {
       const legendElement = this.legendControl.getContainer();
-      if (legendElement) legendElement.style.display = this.showLegend && this.markers.length > 0 ? 'block' : 'none';
+      if (legendElement) legendElement.style.display = this.markers.length > 0 ? 'block' : 'none';
     }
     this.populateLegend();
   }
@@ -176,12 +180,12 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
         div.innerHTML += '<div class="legend-content"></div>';
         
-        div.style.background = 'rgba(255, 255, 255, 0.2)';
+        // Completely transparent background
+        div.style.background = 'transparent';
         div.style.padding = '10px';
         div.style.borderRadius = '5px';
-        div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
-        div.style.backdropFilter = 'blur(5px)';
-        div.style.display = 'none';
+        div.style.boxShadow = 'none';
+        div.style.backdropFilter = 'none';
         
         return div;
       },
@@ -247,7 +251,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         <img src="${iconUrl}" 
              alt="${displayName} marker" 
              style="width:16px;height:16px;margin-right:8px;">
-        <span>${displayName}</span>
+        <span style="color: white; text-shadow: 1px 1px 2px black;">${displayName}</span>
       `;
       
       contentElement.appendChild(item);

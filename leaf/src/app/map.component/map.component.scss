@@ -14,7 +14,6 @@
   }
 }
 
-/* Spinner Overlay */
 .loading-overlay {
   position: absolute;
   top: 0;
@@ -26,7 +25,6 @@
   justify-content: center;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -43,146 +41,39 @@
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-  min-width: 250px;
 }
 
-/* CSS Spinner */
-.css-spinner {
-  width: 60px;
-  height: 60px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-  color: #333;
-  margin: 0 0 5px 0;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.sub-text {
-  color: #666;
-  margin: 0;
-  font-size: 14px;
-}
-
-/* Map Buttons */
-.map-btn {
+.filter-container {
   position: absolute;
-  z-index: 1001;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  font-size: 18px;
-  transition: all 0.2s;
-  padding: 0;
-
-  &:hover:not(:disabled) {
-    background: white;
-    transform: scale(1.05);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  &:focus {
-    outline: 2px solid #3498db;
-    outline-offset: 2px;
-  }
-}
-
-.filter-btn {
-  top: 15px;
-  left: 15px;
-}
-
-.legend-btn {
   top: 15px;
   right: 15px;
-}
-
-/* Slide-in Filter Panel */
-.filter-slide {
-  position: absolute;
-  top: 15px;
-  left: 65px;
   z-index: 1001;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-10px);
-  transition: all 0.2s ease;
-
-  &.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
-  }
 }
 
-.filter-content {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
-  border: 1px solid #eee;
-  backdrop-filter: blur(10px);
-  padding: 2px;
+.filter-field {
+  width: 40px;
+  min-width: 40px !important;
 }
 
-.filter-select {
-  width: 180px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  background: transparent;
-  cursor: pointer;
-  outline: none;
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  &:focus {
-    background: white;
-    box-shadow: 0 0 0 2px #3498db;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+.filter-field ::ng-deep .mat-mdc-text-field-wrapper {
+  background: white !important;
+  border-radius: 20px !important;
+  padding: 0 !important;
+  height: 40px !important;
 }
 
-/* Screen Reader Only */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.filter-field ::ng-deep .mat-mdc-form-field-flex {
+  padding: 0 8px !important;
+  height: 40px !important;
+  align-items: center !important;
+}
+
+.filter-field ::ng-deep .mat-mdc-input-element {
+  display: none !important;
+}
+
+.filter-field ::ng-deep .mat-mdc-form-field-infix {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
 }

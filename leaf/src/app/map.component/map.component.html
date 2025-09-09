@@ -1,70 +1,23 @@
-<div class="map-wrapper" role="region" aria-label="Interactive map">
-  <!-- Map Container -->
-  <div 
-    class="map-container" 
-    [class.blurred]="isLoading"
-    role="application"
-    aria-label="Map display area">
+<div class="map-wrapper">
+  <div class="map-container" [class.blurred]="isLoading"></div>
+
+  <div class="loading-overlay" [class.show]="isLoading">
+    <mat-card class="spinner-container">
+      <mat-spinner diameter="60"></mat-spinner>
+      <mat-card-title>Loading map...</mat-card-title>
+    </mat-card>
   </div>
 
-  <!-- Loading Overlay -->
-  <div 
-    class="loading-overlay" 
-    [class.show]="isLoading"
-    role="status"
-    aria-live="polite">
-    <div class="spinner-container" aria-hidden="true">
-      <div class="css-spinner" aria-hidden="true"></div>
-      <div class="loading-text">Loading map...</div>
-      <p class="sub-text">Please wait</p>
-    </div>
-  </div>
-
-  <!-- Filter Button -->
-  <button 
-    class="map-btn filter-btn"
-    (click)="toggleFilter()" 
-    title="Filter markers"
-    [attr.aria-expanded]="showFilter"
-    [disabled]="isLoading"
-    aria-controls="filter-panel">
-    🎯
-    <span class="sr-only">Filter markers</span>
-  </button>
-  
-  <!-- Filter Dropdown - Slide-in panel -->
-  <div 
-    id="filter-panel"
-    class="filter-slide" 
-    [class.visible]="showFilter && !isLoading"
-    role="region"
-    aria-label="Marker filter panel">
-    <div class="filter-content">
-      <label for="filter-select" class="sr-only">Select marker category</label>
-      <select 
-        id="filter-select"
-        [(ngModel)]="filterLabel" 
-        (change)="filterMarkers()" 
-        [disabled]="isLoading" 
-        class="filter-select"
-        aria-label="Filter markers by category">
-        <option value="All">All Markers</option>
+  <div class="filter-container">
+    <mat-form-field appearance="fill" class="filter-field">
+      <input matInput [matAutocomplete]="auto" [(ngModel)]="filterLabel">
+      <mat-icon matSuffix>filter_list</mat-icon>
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="filterMarkers()">
+        <mat-option value="All">All Markers</mat-option>
         @for (label of uniqueLabels; track label) {
-          <option [value]="label">{{ label }}</option>
+          <mat-option [value]="label">{{ label }}</mat-option>
         }
-      </select>
-    </div>
+      </mat-autocomplete>
+    </mat-form-field>
   </div>
-
-  <!-- Legend Button -->
-  <button 
-    class="map-btn legend-btn"
-    (click)="toggleLegend()" 
-    title="Toggle legend"
-    [attr.aria-expanded]="showLegend"
-    [disabled]="isLoading"
-    aria-controls="map-legend">
-    ℹ️
-    <span class="sr-only">Toggle legend</span>
-  </button>
 </div>
