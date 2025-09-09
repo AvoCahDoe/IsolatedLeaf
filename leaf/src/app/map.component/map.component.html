@@ -1,23 +1,45 @@
-<div class="map-wrapper">
-  <div class="map-container" [class.blurred]="isLoading"></div>
-
-  <div class="loading-overlay" [class.show]="isLoading">
-    <mat-card class="spinner-container">
-      <mat-spinner diameter="60"></mat-spinner>
-      <mat-card-title>Loading map...</mat-card-title>
-    </mat-card>
+<div class="map-wrapper" role="region" aria-label="Interactive map">
+  <!-- Map Container -->
+  <div 
+    class="map-container" 
+    [class.blurred]="isLoading"
+    role="application"
+    aria-label="Map display area">
   </div>
 
-  <div class="filter-container">
-    <mat-form-field appearance="fill" class="filter-field">
-      <input matInput [matAutocomplete]="auto" [(ngModel)]="filterLabel">
-      <mat-icon matSuffix>filter_list</mat-icon>
-      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="filterMarkers()">
-        <mat-option value="All">All Markers</mat-option>
-        @for (label of uniqueLabels; track label) {
-          <mat-option [value]="label">{{ label }}</mat-option>
-        }
-      </mat-autocomplete>
-    </mat-form-field>
+  <!-- Loading Overlay -->
+  <div 
+    class="loading-overlay" 
+    [class.show]="isLoading"
+    role="status"
+    aria-live="polite">
+    <mat-spinner diameter="60"></mat-spinner>
+    <div class="loading-text">Loading map...</div>
+    <p class="sub-text">Please wait</p>
   </div>
+
+  <!-- Filter Button with Menu -->
+  <button 
+    mat-icon-button 
+    [matMenuTriggerFor]="filterMenu"
+    [disabled]="isLoading"
+    aria-label="Filter markers by type"
+    title="Filter markers">
+    <mat-icon>filter_list</mat-icon>
+  </button>
+
+  <!-- Filter Menu -->
+  <mat-menu #filterMenu="matMenu" class="filter-menu">
+    <button mat-menu-item (click)="setFilter('All')" [class.active]="filterLabel === 'All'">
+      All Markers
+    </button>
+    @for (label of uniqueLabels; track label) {
+      <button 
+        mat-menu-item 
+        (click)="setFilter(label)"
+        [class.active]="filterLabel === label">
+        {{ label }}
+      </button>
+    }
+  </mat-menu>
 </div>

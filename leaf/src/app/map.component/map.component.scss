@@ -21,6 +21,7 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1000;
@@ -35,45 +36,31 @@
   }
 }
 
-.spinner-container {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+.loading-text {
+  color: #333;
+  margin: 10px 0 5px 0;
+  font-size: 20px;
+  font-weight: 500;
 }
 
-.filter-container {
+.sub-text {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+button[mat-icon-button] {
   position: absolute;
   top: 15px;
   right: 15px;
   z-index: 1001;
 }
 
-.filter-field {
-  width: 40px;
-  min-width: 40px !important;
+.filter-menu {
+  min-width: 150px;
 }
 
-.filter-field ::ng-deep .mat-mdc-text-field-wrapper {
-  background: white !important;
-  border-radius: 20px !important;
-  padding: 0 !important;
-  height: 40px !important;
-}
-
-.filter-field ::ng-deep .mat-mdc-form-field-flex {
-  padding: 0 8px !important;
-  height: 40px !important;
-  align-items: center !important;
-}
-
-.filter-field ::ng-deep .mat-mdc-input-element {
-  display: none !important;
-}
-
-.filter-field ::ng-deep .mat-mdc-form-field-infix {
-  min-height: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
+.filter-menu .mat-mdc-menu-item.active {
+  background-color: rgba(0, 0, 0, 0.04);
+  font-weight: 500;
 }
