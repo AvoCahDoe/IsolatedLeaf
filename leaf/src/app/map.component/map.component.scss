@@ -56,11 +56,12 @@ button[mat-icon-button] {
   z-index: 1001;
 }
 
-.filter-menu {
+.filter-menu, .context-menu {
   min-width: 150px;
 }
 
-.filter-menu .mat-mdc-menu-item.active {
+.filter-menu .mat-mdc-menu-item.active, 
+.context-menu .mat-mdc-menu-item.active {
   background-color: rgba(0, 0, 0, 0.04);
   font-weight: 500;
 }

@@ -24,7 +24,13 @@ import { MapMarkerI } from '../core/model/Data/Marker.interface';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
+
+
+
+
+
 export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
+
   @Input() public markersData: MapMarkerI[] = [];
 
   public map!: L.Map;
@@ -177,14 +183,13 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', 'Map legend');
         
-        // div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
+        div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
         div.innerHTML += '<div class="legend-content"></div>';
         
         div.style.background = 'rgba(255, 255, 255, 0)';
         div.style.padding = '10px';
         div.style.borderRadius = '5px';
-        div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';    // u can remove border 
-        
+        div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';    // you can delete this one for full transparency but feels a bit uncomfortable it blends with the map
         
         return div;
       },

@@ -3,6 +3,7 @@
   <div 
     class="map-container" 
     [class.blurred]="isLoading"
+    [matContextMenuTriggerFor]="contextMenu"
     role="application"
     aria-label="Map display area">
   </div>
@@ -30,6 +31,29 @@
 
   <!-- Filter Menu -->
   <mat-menu #filterMenu="matMenu" class="filter-menu">
+    <button mat-menu-item (click)="setFilter('All')" [class.active]="filterLabel === 'All'">
+      All Markers
+    </button>
+    @for (label of uniqueLabels; track label) {
+      <button 
+        mat-menu-item 
+        (click)="setFilter(label)"
+        [class.active]="filterLabel === label">
+        {{ label  }}
+      </button>
+    }
+  </mat-menu>
+
+  <!-- Context Menu -->
+  <mat-menu #contextMenu="matMenu" class="context-menu">
+    <button mat-menu-item [matMenuTriggerFor]="filterSubMenu" [disabled]="isLoading">
+      <mat-icon>filter_list</mat-icon>
+      Filter by Type
+    </button>
+  </mat-menu>
+
+  <!-- Context Menu Filter Submenu -->
+  <mat-menu #filterSubMenu="matMenu" class="filter-menu">
     <button mat-menu-item (click)="setFilter('All')" [class.active]="filterLabel === 'All'">
       All Markers
     </button>
