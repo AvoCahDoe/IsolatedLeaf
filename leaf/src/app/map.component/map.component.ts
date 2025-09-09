@@ -24,11 +24,6 @@ import { MapMarkerI } from '../core/model/Data/Marker.interface';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-
-
-
-
-
 export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() public markersData: MapMarkerI[] = [];
@@ -38,6 +33,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   public filterLabel: string = 'All';
   public uniqueLabels: string[] = [];
   public isLoading: boolean = true;
+  public isLegendVisible: boolean = true;
   private legendControl: L.Control | null = null;
   private resizeObserver: ResizeObserver | null = null;
 
@@ -137,7 +133,8 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         
         const m = L.marker([marker.lat, marker.lng], { 
           icon: this.getIconForLabel(marker.label || ''),
-          alt: `${marker.name || 'Unnamed'} - ${marker.label || 'No type'}`
+          alt: `${marker.name || 'Unnamed'} - ${marker.label || 'No type'}`,
+          keyboard: false
         }).bindPopup(popupContent);
         
         this.markers.push(m);
@@ -170,7 +167,7 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateLegend(): void {
     if (this.legendControl && this.map) {
       const legendElement = this.legendControl.getContainer();
-      if (legendElement) legendElement.style.display = this.markers.length > 0 ? 'block' : 'none';
+      if (legendElement) legendElement.style.display = (this.markers.length > 0 && this.isLegendVisible) ? 'block' : 'none';
     }
     this.populateLegend();
   }
@@ -183,13 +180,12 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
         div.setAttribute('role', 'region');
         div.setAttribute('aria-label', 'Map legend');
         
-        div.innerHTML = '<h4 style="margin: 0 0 8px 0;">Legend</h4>';
         div.innerHTML += '<div class="legend-content"></div>';
         
         div.style.background = 'rgba(255, 255, 255, 0)';
         div.style.padding = '10px';
         div.style.borderRadius = '5px';
-        div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';    // you can delete this one for full transparency but feels a bit uncomfortable it blends with the map
+        // div.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
         
         return div;
       },
@@ -298,5 +294,10 @@ export class CmnMapComponent implements OnInit, AfterViewInit, OnDestroy {
       });
       this.resizeObserver.observe(mapElement);
     }
+  }
+
+  public toggleLegend(): void {
+    this.isLegendVisible = !this.isLegendVisible;
+    this.updateLegend();
   }
 }

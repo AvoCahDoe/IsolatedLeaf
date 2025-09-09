@@ -19,6 +19,16 @@
     <p class="sub-text">Please wait</p>
   </div>
 
+  <!-- Legend Toggle Button -->
+  <button 
+    mat-icon-button 
+    (click)="toggleLegend()"
+    [disabled]="isLoading"
+    aria-label="Toggle map legend"
+    title="Toggle legend">
+    <mat-icon>{{ isLegendVisible ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+  </button>
+
   <!-- Filter Button with Menu -->
   <button 
     mat-icon-button 
@@ -46,6 +56,10 @@
 
   <!-- Context Menu -->
   <mat-menu #contextMenu="matMenu" class="context-menu">
+    <button mat-menu-item (click)="toggleLegend()" [disabled]="isLoading">
+      <mat-icon>{{ isLegendVisible ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+      Toggle Legend
+    </button>
     <button mat-menu-item [matMenuTriggerFor]="filterSubMenu" [disabled]="isLoading">
       <mat-icon>filter_list</mat-icon>
       Filter by Type
