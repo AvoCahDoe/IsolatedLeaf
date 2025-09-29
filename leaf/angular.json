@@ -62,7 +62,10 @@
               "buildTarget": "leaf:build:production"
             },
             "development": {
-              "buildTarget": "leaf:build:development"
+              "buildTarget": "leaf:build:development",
+              "proxyConfig": "proxy.conf.json"      
+
+
             }
           },
           "defaultConfiguration": "development"

@@ -1,0 +1,26 @@
+{
+  "/maps": {
+    "target": "https://tile.openstreetmap.org",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/maps": ""
+    }
+  },
+  "/resolve/api/australia": {
+    "target": "http://localhost:8081", 
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/resolve/api/australia": "/api" 
+    }
+  },
+  "/resolve/api/africa": {
+    "target": "http://localhost:8082", 
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/resolve/api/africa": "/api"    
+    }
+  }
+}

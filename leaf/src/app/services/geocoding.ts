@@ -9,11 +9,9 @@ import { MapMarkerI } from '../core/model/Data/Marker.interface';
 export class GeocodingService {
 
   // Proxy endpoints configured in proxy.conf.json
-  // These map to your local Photon instances for geocoding via the /api endpoint
-  // proxy.conf.json rewrites /resolve/api/australia?q=... -> http://localhost:8081/api?q=...
-  // proxy.conf.json rewrites /resolve/api/africa?q=... -> http://localhost:8082/api?q=...
-  private readonly GEOCODE_PROXY_AUSTRALIA = '/resolve/api/australia';
-  private readonly GEOCODE_PROXY_AFRICA = '/resolve/api/africa';
+  // These map to your local Photon instances
+  private readonly GEOCODE_PROXY_AUSTRALIA = '/resolve/api/australia'; // Proxied to http://localhost:8081
+  private readonly GEOCODE_PROXY_AFRICA = '/resolve/api/africa';       // Proxied to http://localhost:8082
   private readonly COORDINATE_CACHE_KEY = 'marker-coordinates';
   private readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -96,7 +94,7 @@ export class GeocodingService {
         const fullGeocodeUrl = `${proxyUrl}?q=${q}&limit=1`;
         console.debug(`GeocodingService: Requesting geocoding from: ${fullGeocodeUrl}`); // Debug log
         const res: any = await firstValueFrom(
-          this.http.get(fullGeocodeUrl) // Use the full constructed URL (e.g., /resolve/api/australia?q=...)
+          this.http.get(fullGeocodeUrl) // Use the full constructed URL
         );
 
         if (res?.features?.length > 0) {
